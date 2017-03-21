@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Moq;
 using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Idioms;
 using Ploeh.AutoFixture.Xunit2;
@@ -93,6 +96,68 @@ namespace LanguagePatternsAndExtensions.Tests
             var expected = Failure.Of(Unit.Default, expectedMessage);
             var actual = Failure.Nok(expectedMessage);
             Assert.Equal(expected, actual);
+        }
+
+        [Theory, Gen]
+        public async Task TryOutcomeQueryExceptionConditionIsCorrect(
+            Guid arguments,
+            [Frozen] Mock<IQuery<Guid, IEnumerable<string>>> query,
+            string expectedMessage,
+            TryOutcomeQuery<Guid, string> sut)
+        {
+            query.Setup(x => x.SendQuery(It.IsAny<Guid>()))
+                .ThrowsAsync(new Exception(expectedMessage));
+
+            var actual = await sut.SendQuery(arguments);
+
+            Assert.Empty(actual.Value);
+            Assert.Equal(expectedMessage, actual.ErrorMessage);
+            Assert.False(actual.Succeeded);
+        }
+
+        [Theory, Gen]
+        public async Task TryOutcomeQuerySuccessConditionIsCorrect(
+            string arguments,
+            [Frozen] Mock<IQuery<string, IEnumerable<int>>> query,
+            IEnumerable<int> expected,
+            TryOutcomeQuery<string, int> sut)
+        {
+            query.Setup(x => x.SendQuery(arguments))
+                .ReturnsAsync(Success.Of(expected));
+
+            var actual = await sut.SendQuery(arguments);
+
+            Assert.Equal(expected, actual.Value);
+            Assert.True(actual.Succeeded);
+        }
+
+        [Theory, Gen]
+        public async Task TryOutcomeCommandExceptionConditionIsCorrect(
+            Guid arguments,
+            [Frozen] Mock<ICommand<Guid>> command,
+            string expectedMessage,
+            TryOutcomeCommand<Guid> sut)
+        {
+            command.Setup(x => x.SendCommand(It.IsAny<Guid>()))
+                .ThrowsAsync(new Exception(expectedMessage));
+
+            var actual = await sut.SendCommand(arguments);
+
+            Assert.Equal(Failure.Of(Unit.Default, expectedMessage), actual);
+        }
+
+        [Theory, Gen]
+        public async Task TryOutcomeCommandSuccessConditionIsCorrect(
+            long arguments,
+            [Frozen] Mock<ICommand<long>> command,
+            TryOutcomeCommand<long> sut)
+        {
+            command.Setup(x => x.SendCommand(arguments))
+                .ReturnsAsync(Success.Of(Unit.Default));
+
+            var actual = await sut.SendCommand(arguments);
+
+            Assert.Equal(Success.Of(Unit.Default), actual);
         }
     }
 }

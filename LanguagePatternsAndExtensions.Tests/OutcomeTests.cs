@@ -6,6 +6,7 @@ using Ploeh.AutoFixture;
 using Ploeh.AutoFixture.Idioms;
 using Ploeh.AutoFixture.Xunit2;
 using Xunit;
+using static LanguagePatternsAndExtensions.OutcomeFactory;
 
 namespace LanguagePatternsAndExtensions.Tests
 {
@@ -63,6 +64,15 @@ namespace LanguagePatternsAndExtensions.Tests
             GuardClauseAssertion assertion)
         {
             assertion.Verify(typeof(Outcome<string>).GetConstructors());
+        }
+
+        [Theory, Gen]
+        public void TryOutcomesAreGuarded(
+            [Frozen] IFixture fixture,
+            GuardClauseAssertion assertion)
+        {
+            assertion.Verify(typeof(TryOutcomeQuery<string, string>).GetConstructors());
+            assertion.Verify(typeof(TryOutcomeCommand<string>).GetConstructors());
         }
 
         [Theory, Gen]
@@ -158,6 +168,22 @@ namespace LanguagePatternsAndExtensions.Tests
             var actual = await sut.SendCommand(arguments);
 
             Assert.Equal(Success.Of(Unit.Default), actual);
+        }
+
+        [Theory, Gen]
+        public void TryOutcomeCommandCreateInfersCorrectly(
+            Mock<ICommand<Guid>> dummyCommand)
+        {
+            var sut = TryOutcome(dummyCommand.Object);
+            Assert.IsType<TryOutcomeCommand<Guid>>(sut);
+        }
+
+        [Theory, Gen]
+        public void TryOutcomeQueryCreateInfersCorrectly(
+            Mock<IQuery<string, IEnumerable<Guid>>> dummyQuery)
+        {
+            var sut = TryOutcome(dummyQuery.Object);
+            Assert.IsType<TryOutcomeQuery<string, Guid>>(sut);
         }
     }
 }

@@ -35,11 +35,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions.cs" />
+    <Compile Include="Failure.cs" />
     <Compile Include="ICommand.cs" />
     <Compile Include="IQuery.cs" />
     <Compile Include="Outcome.cs" />
+    <Compile Include="OutcomeFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TryOutcome.cs" />
+    <Compile Include="Success.cs" />
+    <Compile Include="TryOutcomeQuery.cs" />
+    <Compile Include="TryOutcomeCommand.cs" />
     <Compile Include="Unit.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

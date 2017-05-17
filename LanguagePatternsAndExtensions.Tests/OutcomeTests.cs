@@ -71,8 +71,8 @@ namespace LanguagePatternsAndExtensions.Tests
             [Frozen] IFixture fixture,
             GuardClauseAssertion assertion)
         {
-            assertion.Verify(typeof(TryOutcomeQuery<string, string>).GetConstructors());
-            assertion.Verify(typeof(TryOutcomeCommand<string>).GetConstructors());
+            assertion.Verify(typeof(TryAsyncOutcomeQuery<string, string>).GetConstructors());
+            assertion.Verify(typeof(TryAsyncOutcomeCommand<string>).GetConstructors());
         }
 
         [Theory, Gen]
@@ -109,11 +109,11 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async Task TryOutcomeQueryExceptionConditionIsCorrect(
+        public async Task TryAsyncOutcomeQueryExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<IQuery<Guid, IEnumerable<string>>> query,
+            [Frozen] Mock<IAsyncQuery<Guid, IEnumerable<string>>> query,
             string expectedMessage,
-            TryOutcomeQuery<Guid, string> sut)
+            TryAsyncOutcomeQuery<Guid, string> sut)
         {
             query.Setup(x => x.SendQuery(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception(expectedMessage));
@@ -126,11 +126,11 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async Task TryOutcomeQuerySuccessConditionIsCorrect(
+        public async Task TryAsyncOutcomeQuerySuccessConditionIsCorrect(
             string arguments,
-            [Frozen] Mock<IQuery<string, IEnumerable<int>>> query,
+            [Frozen] Mock<IAsyncQuery<string, IEnumerable<int>>> query,
             IEnumerable<int> expected,
-            TryOutcomeQuery<string, int> sut)
+            TryAsyncOutcomeQuery<string, int> sut)
         {
             query.Setup(x => x.SendQuery(arguments))
                 .ReturnsAsync(Success.Of(expected));
@@ -142,11 +142,11 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async Task TryOutcomeCommandExceptionConditionIsCorrect(
+        public async Task TryAsyncOutcomeCommandExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<ICommand<Guid>> command,
+            [Frozen] Mock<IAsyncCommand<Guid>> command,
             string expectedMessage,
-            TryOutcomeCommand<Guid> sut)
+            TryAsyncOutcomeCommand<Guid> sut)
         {
             command.Setup(x => x.SendCommand(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception(expectedMessage));
@@ -157,15 +157,105 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async Task TryOutcomeCommandSuccessConditionIsCorrect(
+        public async Task TryAsyncOutcomeCommandSuccessConditionIsCorrect(
             long arguments,
-            [Frozen] Mock<ICommand<long>> command,
-            TryOutcomeCommand<long> sut)
+            [Frozen] Mock<IAsyncCommand<long>> command,
+            TryAsyncOutcomeCommand<long> sut)
         {
             command.Setup(x => x.SendCommand(arguments))
                 .ReturnsAsync(Success.Of(Unit.Default));
 
             var actual = await sut.SendCommand(arguments);
+
+            Assert.Equal(Success.Of(Unit.Default), actual);
+        }
+
+        [Theory, Gen]
+        public void TryAsyncOutcomeCommandCreateInfersCorrectly(
+            Mock<IAsyncCommand<Guid>> dummyCommand)
+        {
+            var sut = TryAsyncOutcome(dummyCommand.Object);
+            Assert.IsType<TryAsyncOutcomeCommand<Guid>>(sut);
+        }
+
+        [Theory, Gen]
+        public void TryAsyncOutcomeQueryCreateInfersCorrectly(
+            Mock<IAsyncQuery<string, IEnumerable<Guid>>> dummyQuery)
+        {
+            var sut = TryAsyncOutcome(dummyQuery.Object);
+            Assert.IsType<TryAsyncOutcomeQuery<string, Guid>>(sut);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+        [Theory, Gen]
+        public void TryOutcomeQueryExceptionConditionIsCorrect(
+            Guid arguments,
+            [Frozen] Mock<IQuery<Guid, IEnumerable<string>>> query,
+            string expectedMessage,
+            TryOutcomeQuery<Guid, string> sut)
+        {
+            query.Setup(x => x.SendQuery(It.IsAny<Guid>()))
+                .Throws(new Exception(expectedMessage));
+
+            var actual = sut.SendQuery(arguments);
+
+            Assert.Empty(actual.Value);
+            Assert.Equal(expectedMessage, actual.ErrorMessage);
+            Assert.False(actual.Succeeded);
+        }
+
+        [Theory, Gen]
+        public void TryOutcomeQuerySuccessConditionIsCorrect(
+            string arguments,
+            [Frozen] Mock<IQuery<string, IEnumerable<int>>> query,
+            IEnumerable<int> expected,
+            TryOutcomeQuery<string, int> sut)
+        {
+            query.Setup(x => x.SendQuery(arguments))
+                .Returns(Success.Of(expected));
+
+            var actual = sut.SendQuery(arguments);
+
+            Assert.Equal(expected, actual.Value);
+            Assert.True(actual.Succeeded);
+        }
+
+        [Theory, Gen]
+        public void TryOutcomeCommandExceptionConditionIsCorrect(
+            Guid arguments,
+            [Frozen] Mock<ICommand<Guid>> command,
+            string expectedMessage,
+            TryOutcomeCommand<Guid> sut)
+        {
+            command.Setup(x => x.SendCommand(It.IsAny<Guid>()))
+                .Throws(new Exception(expectedMessage));
+
+            var actual = sut.SendCommand(arguments);
+
+            Assert.Equal(Failure.Of(Unit.Default, expectedMessage), actual);
+        }
+
+        [Theory, Gen]
+        public void TryOutcomeCommandSuccessConditionIsCorrect(
+            long arguments,
+            [Frozen] Mock<ICommand<long>> command,
+            TryOutcomeCommand<long> sut)
+        {
+            command.Setup(x => x.SendCommand(arguments))
+                .Returns(Success.Of(Unit.Default));
+
+            var actual = sut.SendCommand(arguments);
 
             Assert.Equal(Success.Of(Unit.Default), actual);
         }

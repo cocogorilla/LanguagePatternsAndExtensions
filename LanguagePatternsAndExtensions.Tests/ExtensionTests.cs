@@ -62,11 +62,11 @@ namespace LanguagePatternsAndExtensions.Tests
             var expecteds = new HashSet<string>(fixture.CreateMany<string>(100));
             var runcount = -1;
             Func<string, int, Task> act = async (x, y) =>
-             {
-                 Assert.True(expecteds.Contains(x));
-                 runcount = y;
-                 await Task.CompletedTask;
-             };
+            {
+                Assert.True(expecteds.Contains(x));
+                runcount = y;
+                await Task.CompletedTask;
+            };
             await expecteds.IterAsync(act);
             Assert.Equal(runcount, expecteds.Count - 1);
         }
@@ -184,22 +184,6 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.Equal(
                 knowns.RandomElementUsing(random1),
                 knowns.RandomElementUsing(random2));
-        }
-
-        [Fact]
-        public void OptionUsesAreCorrect()
-        {
-            var fixture = new Fixture();
-            var nonnullstring = fixture.Create<string>();
-            var nullstring = (string)null;
-            var sut = nonnullstring.Some();
-            Assert.Equal(nonnullstring, sut.Single());
-            var sut2 = nullstring.Some();
-            Assert.Equal(Option<string>.None(), sut2);
-            var sut3 = Option<string>.Some(nonnullstring);
-            Assert.Equal(sut, sut3);
-            Assert.Equal(Option<int>.None(), Option<int>.None());
-            Assert.Equal(Option<string>.Some(nullstring), Option<string>.None());
         }
     }
 }

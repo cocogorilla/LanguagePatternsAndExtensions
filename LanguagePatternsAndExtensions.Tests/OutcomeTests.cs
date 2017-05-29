@@ -186,18 +186,6 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.IsType<TryAsyncOutcomeQuery<string, Guid>>(sut);
         }
 
-
-
-
-
-
-
-
-
-
-
-
-
         [Theory, Gen]
         public void TryOutcomeQueryExceptionConditionIsCorrect(
             Guid arguments,

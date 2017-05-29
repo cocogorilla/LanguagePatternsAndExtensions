@@ -54,5 +54,10 @@ namespace LanguagePatternsAndExtensions
         {
             return Option<T>.None();
         }
+
+        public static Option<T> ToOption<T>(this IEnumerable<T> item)
+        {
+            return new Option<T>(item);
+        }
     }
 }

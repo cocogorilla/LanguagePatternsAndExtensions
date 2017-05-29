@@ -27,5 +27,17 @@ namespace LanguagePatternsAndExtensions
         {
             return new TryOutcomeCommand<TArgs>(baseCommand);
         }
+
+        public static TryAsyncOutcomeOptionQuery<TArgs, TResult> TryAsyncOutcome<TArgs, TResult>(
+            IAsyncQuery<TArgs, Option<TResult>> baseQuery)
+        {
+            return new TryAsyncOutcomeOptionQuery<TArgs, TResult>(baseQuery);
+        }
+
+        public static TryOutcomeOptionQuery<TArgs, TResult> TryOutcome<TArgs, TResult>(
+            IQuery<TArgs, Option<TResult>> baseQuery)
+        {
+            return new TryOutcomeOptionQuery<TArgs, TResult>(baseQuery);
+        }
     }
 }

@@ -80,6 +80,8 @@
   <ItemGroup>
     <Compile Include="ExtensionTests.cs" />
     <Compile Include="Gen.cs" />
+    <Compile Include="OptionTests.cs" />
+    <Compile Include="OutcomeOptionTests.cs" />
     <Compile Include="OutcomeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -148,10 +148,10 @@ namespace LanguagePatternsAndExtensions.Tests
             string expectedMessage,
             TryAsyncOutcomeCommand<Guid> sut)
         {
-            command.Setup(x => x.SendCommand(It.IsAny<Guid>()))
+            command.Setup(x => x.SendCommandAsync(It.IsAny<Guid>()))
                 .ThrowsAsync(new Exception(expectedMessage));
 
-            var actual = await sut.SendCommand(arguments);
+            var actual = await sut.SendCommandAsync(arguments);
 
             Assert.Equal(Failure.Of(Unit.Default, expectedMessage), actual);
         }
@@ -162,10 +162,10 @@ namespace LanguagePatternsAndExtensions.Tests
             [Frozen] Mock<IAsyncCommand<long>> command,
             TryAsyncOutcomeCommand<long> sut)
         {
-            command.Setup(x => x.SendCommand(arguments))
+            command.Setup(x => x.SendCommandAsync(arguments))
                 .ReturnsAsync(Success.Of(Unit.Default));
 
-            var actual = await sut.SendCommand(arguments);
+            var actual = await sut.SendCommandAsync(arguments);
 
             Assert.Equal(Success.Of(Unit.Default), actual);
         }

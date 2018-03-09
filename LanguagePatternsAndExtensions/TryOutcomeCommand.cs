@@ -16,11 +16,11 @@ namespace LanguagePatternsAndExtensions
             if (baseCommand == null) throw new ArgumentNullException(nameof(baseCommand));
             _baseCommand = baseCommand;
         }
-        public async Task<Outcome<Unit>> SendCommand(TArgs args)
+        public async Task<Outcome<Unit>> SendCommandAsync(TArgs args)
         {
             try
             {
-                return await _baseCommand.SendCommand(args); ;
+                return await _baseCommand.SendCommandAsync(args); ;
             }
             catch (Exception ex)
             {

@@ -77,5 +77,17 @@ namespace LanguagePatternsAndExtensions.Tests
                 Assert.Equal(i < expiresAt ? oldObject : newObject, actual);
             }
         }
+
+        [Theory, Gen]
+        public async void InstancesThrowWhenNullIsReturned(
+            string instance,
+            IFixture fixture)
+        {
+            instance = null;
+            fixture.Inject<Func<Task<string>>>(
+                async () => null);
+            var sut = fixture.Create<LifeTimeManager<string>>();
+            await Assert.ThrowsAsync<LifeTimeManagerException>(async () => await sut.ReceiveMessage());
+        }
     }
 }

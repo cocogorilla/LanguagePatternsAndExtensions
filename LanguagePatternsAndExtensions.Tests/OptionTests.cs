@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Xunit;
 using static LanguagePatternsAndExtensions.OptionExtensions;
 

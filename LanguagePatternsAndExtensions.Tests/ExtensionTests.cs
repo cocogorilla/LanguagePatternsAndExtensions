@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Ploeh.AutoFixture;
+using AutoFixture;
 using Xunit;
 
 namespace LanguagePatternsAndExtensions.Tests
@@ -47,7 +47,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = 0;
             Func<string, Task> act = async x =>
             {
-                Assert.True(expecteds.Contains(x));
+                Assert.Contains(x, expecteds);
                 runcount++;
                 await Task.CompletedTask;
             };
@@ -63,7 +63,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = -1;
             Func<string, int, Task> act = async (x, y) =>
             {
-                Assert.True(expecteds.Contains(x));
+                Assert.Contains(x, expecteds);
                 runcount = y;
                 await Task.CompletedTask;
             };
@@ -79,7 +79,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = 0;
             Func<object, Task> act = async x =>
             {
-                Assert.True(expecteds.Cast<object>().Contains(x));
+                Assert.Contains(x, expecteds.Cast<object>());
                 runcount++;
                 await Task.CompletedTask;
             };
@@ -95,7 +95,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = -1;
             Func<object, int, Task> act = async (x, y) =>
             {
-                Assert.True(expecteds.Cast<object>().Contains(x));
+                Assert.Contains(x, expecteds.Cast<object>());
                 runcount = y;
                 await Task.CompletedTask;
             };
@@ -111,7 +111,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = 0;
             Action<object> act = x =>
             {
-                Assert.True(expecteds.Cast<object>().Contains(x));
+                Assert.Contains(x, expecteds.Cast<object>());
                 runcount++;
             };
             expecteds.Iter(act);
@@ -126,7 +126,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = -1;
             Action<object, int> act = (x, y) =>
             {
-                Assert.True(expecteds.Cast<object>().Contains(x));
+                Assert.Contains(x, expecteds.Cast<object>());
                 runcount = y;
             };
             expecteds.Iter(act);
@@ -141,7 +141,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = 0;
             Action<string> act = x =>
             {
-                Assert.True(expecteds.Contains(x));
+                Assert.Contains(x, expecteds.Cast<object>());
                 runcount++;
             };
             expecteds.Iter(act);
@@ -156,7 +156,7 @@ namespace LanguagePatternsAndExtensions.Tests
             var runcount = -1;
             Action<string, int> act = (x, y) =>
             {
-                Assert.True(expecteds.Contains(x));
+                Assert.Contains(x, expecteds);
                 runcount = y;
             };
             expecteds.Iter(act);

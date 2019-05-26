@@ -1,6 +1,6 @@
-﻿using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.AutoMoq;
-using Ploeh.AutoFixture.Xunit2;
+﻿using AutoFixture;
+using AutoFixture.AutoMoq;
+using AutoFixture.Xunit2;
 
 namespace LanguagePatternsAndExtensions.Tests
 {
@@ -9,7 +9,7 @@ namespace LanguagePatternsAndExtensions.Tests
         public Gen()
             : this(connectionString: null)
         { }
-        public Gen(string connectionString = null) : base(new Fixture().Customize(
+        public Gen(string connectionString = null) : base(() => new Fixture().Customize(
             new CompositeCustomization(
                 new OptionIntCustomization(),
                 new AutoMoqCustomization())))

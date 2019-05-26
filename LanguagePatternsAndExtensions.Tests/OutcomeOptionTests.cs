@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Moq;
-using Ploeh.AutoFixture.Xunit2;
+using AutoFixture.Xunit2;
 using Xunit;
 using static LanguagePatternsAndExtensions.OutcomeFactory;
 
@@ -12,7 +12,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public async Task TryAsyncOutcomeOptionQueryExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<IAsyncQuery<Guid, Option<string>>> query,
+            [Frozen] Mock<IAsyncOutcomeQuery<Guid, Option<string>>> query,
             string expectedMessage,
             TryAsyncOutcomeOptionQuery<Guid, string> sut)
         {
@@ -29,7 +29,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public async Task TryAsyncOutcomeOptionQuerySuccessConditionIsCorrect(
             string arguments,
-            [Frozen] Mock<IAsyncQuery<string, Option<int>>> query,
+            [Frozen] Mock<IAsyncOutcomeQuery<string, Option<int>>> query,
             Option<int> expected,
             TryAsyncOutcomeOptionQuery<string, int> sut)
         {
@@ -44,7 +44,7 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void TryAsyncOutcomeOptionQueryCreateInfersCorrectly(
-            Mock<IAsyncQuery<string, Option<Guid>>> dummyQuery)
+            Mock<IAsyncOutcomeQuery<string, Option<Guid>>> dummyQuery)
         {
             var sut = TryAsyncOutcome(dummyQuery.Object);
             Assert.IsType<TryAsyncOutcomeOptionQuery<string, Guid>>(sut);
@@ -53,7 +53,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void TryOutcomeOptionQueryExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<IQuery<Guid, Option<string>>> query,
+            [Frozen] Mock<IOutcomeQuery<Guid, Option<string>>> query,
             string expectedMessage,
             TryOutcomeOptionQuery<Guid, string> sut)
         {
@@ -70,7 +70,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void TryOutcomeOptionQuerySuccessConditionIsCorrect(
             string arguments,
-            [Frozen] Mock<IQuery<string, Option<int>>> query,
+            [Frozen] Mock<IOutcomeQuery<string, Option<int>>> query,
             Option<int> expected,
             TryOutcomeOptionQuery<string, int> sut)
         {
@@ -85,7 +85,7 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void TryOutcomeOptionQueryCreateInfersCorrectly(
-            Mock<IQuery<string, Option<Guid>>> dummyQuery)
+            Mock<IOutcomeQuery<string, Option<Guid>>> dummyQuery)
         {
             var sut = TryOutcome(dummyQuery.Object);
             Assert.IsType<TryOutcomeOptionQuery<string, Guid>>(sut);

@@ -7,11 +7,11 @@ namespace LanguagePatternsAndExtensions
     /// Try the provided query and return Success of result or Failure of Empty of result type
     /// </summary>
     /// <typeparam name="TArgs">Arguments to Command</typeparam>
-    public class TryAsyncOutcomeCommand<TArgs> : IAsyncCommand<TArgs>
+    public class TryAsyncOutcomeCommand<TArgs> : IAsyncOutcomeCommand<TArgs>
     {
-        private readonly IAsyncCommand<TArgs> _baseCommand;
+        private readonly IAsyncOutcomeCommand<TArgs> _baseCommand;
 
-        public TryAsyncOutcomeCommand(IAsyncCommand<TArgs> baseCommand)
+        public TryAsyncOutcomeCommand(IAsyncOutcomeCommand<TArgs> baseCommand)
         {
             if (baseCommand == null) throw new ArgumentNullException(nameof(baseCommand));
             _baseCommand = baseCommand;
@@ -33,11 +33,11 @@ namespace LanguagePatternsAndExtensions
     /// Try the provided query and return Success of result or Failure of Empty of result type
     /// </summary>
     /// <typeparam name="TArgs">Arguments to Command</typeparam>
-    public class TryOutcomeCommand<TArgs> : ICommand<TArgs>
+    public class TryOutcomeCommand<TArgs> : IOutcomeCommand<TArgs>
     {
-        private readonly ICommand<TArgs> _baseCommand;
+        private readonly IOutcomeCommand<TArgs> _baseCommand;
 
-        public TryOutcomeCommand(ICommand<TArgs> baseCommand)
+        public TryOutcomeCommand(IOutcomeCommand<TArgs> baseCommand)
         {
             if (baseCommand == null) throw new ArgumentNullException(nameof(baseCommand));
             _baseCommand = baseCommand;

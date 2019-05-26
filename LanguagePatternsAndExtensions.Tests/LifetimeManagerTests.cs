@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.Idioms;
-using Ploeh.AutoFixture.Xunit2;
+using AutoFixture;
+using AutoFixture.Idioms;
+using AutoFixture.Xunit2;
 using Xunit;
 
 namespace LanguagePatternsAndExtensions.Tests
@@ -15,7 +15,7 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public void IsGuarded([Frozen] IFixture fixture, GuardClauseAssertion assertion)
+        public void IsGuarded(GuardClauseAssertion assertion)
         {
             assertion.Verify(typeof(LifeTimeManager<TestObject>).GetConstructors());
         }
@@ -80,10 +80,8 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public async void InstancesThrowWhenNullIsReturned(
-            string instance,
             IFixture fixture)
         {
-            instance = null;
             fixture.Inject<Func<Task<string>>>(
                 async () => null);
             var sut = fixture.Create<LifeTimeManager<string>>();

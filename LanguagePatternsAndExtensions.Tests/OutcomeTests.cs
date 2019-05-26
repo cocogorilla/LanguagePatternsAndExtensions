@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Moq;
-using Ploeh.AutoFixture;
-using Ploeh.AutoFixture.Idioms;
-using Ploeh.AutoFixture.Xunit2;
+using AutoFixture;
+using AutoFixture.Idioms;
+using AutoFixture.Xunit2;
 using Xunit;
 using static LanguagePatternsAndExtensions.OutcomeFactory;
 
@@ -111,7 +111,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public async Task TryAsyncOutcomeQueryExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<IAsyncQuery<Guid, IEnumerable<string>>> query,
+            [Frozen] Mock<IAsyncOutcomeQuery<Guid, IEnumerable<string>>> query,
             string expectedMessage,
             TryAsyncOutcomeQuery<Guid, string> sut)
         {
@@ -128,7 +128,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public async Task TryAsyncOutcomeQuerySuccessConditionIsCorrect(
             string arguments,
-            [Frozen] Mock<IAsyncQuery<string, IEnumerable<int>>> query,
+            [Frozen] Mock<IAsyncOutcomeQuery<string, IEnumerable<int>>> query,
             IEnumerable<int> expected,
             TryAsyncOutcomeQuery<string, int> sut)
         {
@@ -144,7 +144,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public async Task TryAsyncOutcomeCommandExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<IAsyncCommand<Guid>> command,
+            [Frozen] Mock<IAsyncOutcomeCommand<Guid>> command,
             string expectedMessage,
             TryAsyncOutcomeCommand<Guid> sut)
         {
@@ -159,7 +159,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public async Task TryAsyncOutcomeCommandSuccessConditionIsCorrect(
             long arguments,
-            [Frozen] Mock<IAsyncCommand<long>> command,
+            [Frozen] Mock<IAsyncOutcomeCommand<long>> command,
             TryAsyncOutcomeCommand<long> sut)
         {
             command.Setup(x => x.SendCommandAsync(arguments))
@@ -172,7 +172,7 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void TryAsyncOutcomeCommandCreateInfersCorrectly(
-            Mock<IAsyncCommand<Guid>> dummyCommand)
+            Mock<IAsyncOutcomeCommand<Guid>> dummyCommand)
         {
             var sut = TryAsyncOutcome(dummyCommand.Object);
             Assert.IsType<TryAsyncOutcomeCommand<Guid>>(sut);
@@ -180,7 +180,7 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void TryAsyncOutcomeQueryCreateInfersCorrectly(
-            Mock<IAsyncQuery<string, IEnumerable<Guid>>> dummyQuery)
+            Mock<IAsyncOutcomeQuery<string, IEnumerable<Guid>>> dummyQuery)
         {
             var sut = TryAsyncOutcome(dummyQuery.Object);
             Assert.IsType<TryAsyncOutcomeQuery<string, Guid>>(sut);
@@ -189,7 +189,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void TryOutcomeQueryExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<IQuery<Guid, IEnumerable<string>>> query,
+            [Frozen] Mock<IOutcomeQuery<Guid, IEnumerable<string>>> query,
             string expectedMessage,
             TryOutcomeQuery<Guid, string> sut)
         {
@@ -206,7 +206,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void TryOutcomeQuerySuccessConditionIsCorrect(
             string arguments,
-            [Frozen] Mock<IQuery<string, IEnumerable<int>>> query,
+            [Frozen] Mock<IOutcomeQuery<string, IEnumerable<int>>> query,
             IEnumerable<int> expected,
             TryOutcomeQuery<string, int> sut)
         {
@@ -222,7 +222,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void TryOutcomeCommandExceptionConditionIsCorrect(
             Guid arguments,
-            [Frozen] Mock<ICommand<Guid>> command,
+            [Frozen] Mock<IOutcomeCommand<Guid>> command,
             string expectedMessage,
             TryOutcomeCommand<Guid> sut)
         {
@@ -237,7 +237,7 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void TryOutcomeCommandSuccessConditionIsCorrect(
             long arguments,
-            [Frozen] Mock<ICommand<long>> command,
+            [Frozen] Mock<IOutcomeCommand<long>> command,
             TryOutcomeCommand<long> sut)
         {
             command.Setup(x => x.SendCommand(arguments))
@@ -250,7 +250,7 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void TryOutcomeCommandCreateInfersCorrectly(
-            Mock<ICommand<Guid>> dummyCommand)
+            Mock<IOutcomeCommand<Guid>> dummyCommand)
         {
             var sut = TryOutcome(dummyCommand.Object);
             Assert.IsType<TryOutcomeCommand<Guid>>(sut);
@@ -258,7 +258,7 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void TryOutcomeQueryCreateInfersCorrectly(
-            Mock<IQuery<string, IEnumerable<Guid>>> dummyQuery)
+            Mock<IOutcomeQuery<string, IEnumerable<Guid>>> dummyQuery)
         {
             var sut = TryOutcome(dummyQuery.Object);
             Assert.IsType<TryOutcomeQuery<string, Guid>>(sut);

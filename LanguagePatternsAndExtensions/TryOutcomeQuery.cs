@@ -10,11 +10,11 @@ namespace LanguagePatternsAndExtensions
     /// </summary>
     /// <typeparam name="TArgs">Query Arguments</typeparam>
     /// <typeparam name="TResult">Result Type</typeparam>
-    public class TryAsyncOutcomeQuery<TArgs, TResult> : IAsyncQuery<TArgs, IEnumerable<TResult>>
+    public class TryAsyncOutcomeQuery<TArgs, TResult> : IAsyncOutcomeQuery<TArgs, IEnumerable<TResult>>
     {
-        private readonly IAsyncQuery<TArgs, IEnumerable<TResult>> _baseQuery;
+        private readonly IAsyncOutcomeQuery<TArgs, IEnumerable<TResult>> _baseQuery;
 
-        public TryAsyncOutcomeQuery(IAsyncQuery<TArgs, IEnumerable<TResult>> baseQuery)
+        public TryAsyncOutcomeQuery(IAsyncOutcomeQuery<TArgs, IEnumerable<TResult>> baseQuery)
         {
             if (baseQuery == null) throw new ArgumentNullException(nameof(baseQuery));
             _baseQuery = baseQuery;
@@ -33,11 +33,11 @@ namespace LanguagePatternsAndExtensions
         }
     }
 
-    public class TryAsyncOutcomeOptionQuery<TArgs, TResult> : IAsyncQuery<TArgs, Option<TResult>>
+    public class TryAsyncOutcomeOptionQuery<TArgs, TResult> : IAsyncOutcomeQuery<TArgs, Option<TResult>>
     {
-        private readonly IAsyncQuery<TArgs, Option<TResult>> _baseQuery;
+        private readonly IAsyncOutcomeQuery<TArgs, Option<TResult>> _baseQuery;
 
-        public TryAsyncOutcomeOptionQuery(IAsyncQuery<TArgs, Option<TResult>> baseQuery)
+        public TryAsyncOutcomeOptionQuery(IAsyncOutcomeQuery<TArgs, Option<TResult>> baseQuery)
         {
             if (baseQuery == null) throw new ArgumentNullException(nameof(baseQuery));
             _baseQuery = baseQuery;
@@ -60,11 +60,11 @@ namespace LanguagePatternsAndExtensions
     /// </summary>
     /// <typeparam name="TArgs">Query Arguments</typeparam>
     /// <typeparam name="TResult">Result Type</typeparam>
-    public class TryOutcomeQuery<TArgs, TResult> : IQuery<TArgs, IEnumerable<TResult>>
+    public class TryOutcomeQuery<TArgs, TResult> : IOutcomeQuery<TArgs, IEnumerable<TResult>>
     {
-        private readonly IQuery<TArgs, IEnumerable<TResult>> _baseQuery;
+        private readonly IOutcomeQuery<TArgs, IEnumerable<TResult>> _baseQuery;
 
-        public TryOutcomeQuery(IQuery<TArgs, IEnumerable<TResult>> baseQuery)
+        public TryOutcomeQuery(IOutcomeQuery<TArgs, IEnumerable<TResult>> baseQuery)
         {
             if (baseQuery == null) throw new ArgumentNullException(nameof(baseQuery));
             _baseQuery = baseQuery;
@@ -83,11 +83,11 @@ namespace LanguagePatternsAndExtensions
         }
     }
 
-    public class TryOutcomeOptionQuery<TArgs, TResult> : IQuery<TArgs, Option<TResult>>
+    public class TryOutcomeOptionQuery<TArgs, TResult> : IOutcomeQuery<TArgs, Option<TResult>>
     {
-        private readonly IQuery<TArgs, Option<TResult>> _baseQuery;
+        private readonly IOutcomeQuery<TArgs, Option<TResult>> _baseQuery;
 
-        public TryOutcomeOptionQuery(IQuery<TArgs, Option<TResult>> baseQuery)
+        public TryOutcomeOptionQuery(IOutcomeQuery<TArgs, Option<TResult>> baseQuery)
         {
             if (baseQuery == null) throw new ArgumentNullException(nameof(baseQuery));
             _baseQuery = baseQuery;

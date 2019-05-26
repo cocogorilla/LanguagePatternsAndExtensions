@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using AutoFixture;
 using Xunit;
 using static LanguagePatternsAndExtensions.OptionExtensions;
@@ -42,6 +43,40 @@ namespace LanguagePatternsAndExtensions.Tests
             });
             Option<string> test2 = justright.ToOption();
             Assert.Equal(justright.Single(), test2.Single());
+        }
+
+        [Theory, Gen]
+        public void TwoSomeOptionsSameValueAreEqual(
+            string foo)
+        {
+            var optionOne = Option<string>.Some(foo);
+            var optionTwo = Option<string>.Some(foo);
+
+            Assert.Equal(optionOne, optionTwo);
+        }
+
+        [Theory, Gen]
+        public void TwoSameValuesButStoredSeparatelyOptionsAreEqual(
+            int foo,
+            int goo)
+        {
+            foo = Math.Abs(foo);
+            goo = Math.Abs(goo);
+            goo = goo + (foo - goo);
+            var optionOne = foo.Some();
+            var optionTwo = goo.Some();
+
+            Assert.Equal(optionOne, optionTwo);
+        }
+
+        [Theory, Gen]
+        public void NoneIsNotSome(
+            int foo)
+        {
+            var testone = foo.Some();
+            var testtwo = Option<int>.None();
+
+            Assert.NotEqual(testone, testtwo);
         }
     }
 }

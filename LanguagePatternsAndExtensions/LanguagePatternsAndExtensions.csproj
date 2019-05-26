@@ -43,6 +43,7 @@
     <Compile Include="LifetimeManager.cs" />
     <Compile Include="LifeTimeManagerException.cs" />
     <Compile Include="Option.cs" />
+    <Compile Include="OptionExtensions.cs" />
     <Compile Include="Outcome.cs" />
     <Compile Include="OutcomeFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

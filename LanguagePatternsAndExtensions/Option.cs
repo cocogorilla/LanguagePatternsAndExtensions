@@ -1,43 +1,61 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 
 namespace LanguagePatternsAndExtensions
 {
-    public struct Option<T> : IEnumerable<T>
+    public struct Option<T>
     {
-        private readonly IEnumerable<T> _source;
+        private readonly T _item;
+        private readonly bool _hasItem;
 
-        public Option(IEnumerable<T> source)
+        public Option(T item)
         {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (source.Count() > 1) throw new ArgumentException("source enumerates more than 1 item");
-            _source = source;
-        }
-        public IEnumerator<T> GetEnumerator()
-        {
-            return _source.GetEnumerator();
+            if (item == null) throw new ArgumentNullException(nameof(item));
+            _item = item;
+            _hasItem = true;
         }
 
-        IEnumerator IEnumerable.GetEnumerator()
+        public Option(Unit none)
         {
-            return GetEnumerator();
+            _item = default(T);
+            _hasItem = false;
         }
 
         public static Option<T> Some(IEnumerable<T> source)
         {
-            return new Option<T>(source);
+            if (source.Count() > 1)
+                throw new ArgumentException("source for Option cannot enumerate more than once");
+
+            var item = source.SingleOrDefault();
+
+            return item != null
+                ? new Option<T>(item)
+                : new Option<T>(Unit.Default);
         }
 
         public static Option<T> Some(T source)
         {
-            return new Option<T>(source.AsEnumerable());
+            return source == null
+                ? None()
+                : new Option<T>(source);
         }
 
         public static Option<T> None()
         {
-            return new Option<T>(Enumerable.Empty<T>());
+            return new Option<T>(Unit.Default);
+        }
+
+        public TResult Match<TResult>(TResult nothing, Func<T, TResult> just)
+        {
+            if (nothing == null) throw new ArgumentNullException(nameof(nothing));
+            if (just == null) throw new ArgumentNullException(nameof(just));
+
+            return (_hasItem)
+                ? just(_item)
+                : nothing;
         }
     }
 }

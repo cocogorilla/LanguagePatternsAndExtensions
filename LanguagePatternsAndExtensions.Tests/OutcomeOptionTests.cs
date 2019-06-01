@@ -21,7 +21,6 @@ namespace LanguagePatternsAndExtensions.Tests
 
             var actual = await sut.SendQuery(arguments);
 
-            Assert.Empty(actual.Value);
             Assert.Equal(expectedMessage, actual.ErrorMessage);
             Assert.False(actual.Succeeded);
         }
@@ -62,7 +61,6 @@ namespace LanguagePatternsAndExtensions.Tests
 
             var actual = sut.SendQuery(arguments);
 
-            Assert.Empty(actual.Value);
             Assert.Equal(expectedMessage, actual.ErrorMessage);
             Assert.False(actual.Succeeded);
         }

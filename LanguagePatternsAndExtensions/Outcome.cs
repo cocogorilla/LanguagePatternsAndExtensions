@@ -3,23 +3,22 @@ using System.Collections.Generic;
 
 namespace LanguagePatternsAndExtensions
 {
-    public class Outcome<TValue> : IEquatable<Outcome<TValue>>
+    public struct Outcome<TValue> : IEquatable<Outcome<TValue>>
     {
         public bool Equals(Outcome<TValue> other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return EqualityComparer<TValue>.Default.Equals(Value, other.Value) &&
-                string.Equals(ErrorMessage, other.ErrorMessage, StringComparison.InvariantCulture)
-                && Succeeded == other.Succeeded;
+            return EqualityComparer<TValue>.Default.Equals(Value, other.Value)
+                   && string.Equals(ErrorMessage, other.ErrorMessage, StringComparison.InvariantCulture)
+                   && Succeeded == other.Succeeded;
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            var other = obj as Outcome<TValue>;
-            return other != null && Equals(other);
+            return obj is Outcome<TValue> && Equals((Outcome<TValue>)obj);
         }
 
         public override int GetHashCode()
@@ -52,8 +51,28 @@ namespace LanguagePatternsAndExtensions
             Succeeded = succeeded;
         }
 
-        public TValue Value { get; }
-        public string ErrorMessage { get; }
+        public TResult Traverse<TResult>(Func<TValue, TResult> success, Func<TValue, string, TResult> error)
+        {
+            if (success == null) throw new ArgumentNullException(nameof(success));
+            if (error == null) throw new ArgumentNullException(nameof(error));
+
+            if (Succeeded) return success(Value);
+            return error(Value, ErrorMessage);
+        }
+
+        public Unit Traverse(Action<TValue> success, Action<TValue, string> error)
+        {
+            if (success == null) throw new ArgumentNullException(nameof(success));
+            if (error == null) throw new ArgumentNullException(nameof(error));
+
+            if (Succeeded) success(Value);
+            else error(Value, ErrorMessage);
+
+            return Unit.Default;
+        }
+
+        private readonly TValue Value;
+        private readonly string ErrorMessage;
         public bool Succeeded { get; }
     }
 }

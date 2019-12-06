@@ -6,33 +6,71 @@ using AutoFixture;
 using AutoFixture.Idioms;
 using AutoFixture.Xunit2;
 using Xunit;
-using static LanguagePatternsAndExtensions.OutcomeFactory;
 
 namespace LanguagePatternsAndExtensions.Tests
 {
     public class OutcomeTests
     {
         [Theory, Gen]
-        public void SuccessContainsExpectedValue(
+        public void SuccessContainsExpectedValueForQuery(
+            Guid expected,
+            string successValue)
+        {
+            var sut = Success.Of(expected);
+            var result = sut.Traverse(x =>
+            {
+                Assert.Equal(expected, x);
+                return successValue;
+            }, (x, y) =>
+            {
+                throw new Exception("should not be in this case");
+            });
+            Assert.Equal(result, successValue);
+        }
+
+        [Theory, Gen]
+        public void SuccessContainsExpectedValueForCommand(
             Guid expected)
         {
             var sut = Success.Of(expected);
-            Assert.Equal(expected, sut.Value);
+            sut.Traverse(x =>
+            {
+                Assert.Equal(expected, x);
+            }, (x, y) => throw new Exception("should not be in this case"));
         }
 
         [Fact]
-        public void SuccessSuccceded()
+        public void SuccessSucceeded()
         {
             var sut = Success.Of("anything");
             Assert.True(sut.Succeeded);
         }
 
         [Theory, Gen]
-        public void FailureMessageIsExpected(
+        public void FailureMessageIsExpectedForQuery(
+            string expected,
+            string customError)
+        {
+            var sut = Failure.Of(42, expected);
+            var result = sut.Traverse(x => throw new Exception("should not be in this case"),
+                (x, y) =>
+                {
+                    Assert.Equal(expected, y);
+                    return customError;
+                });
+            Assert.Equal(customError, result);
+        }
+
+        [Theory, Gen]
+        public void FailureMessageIsExpectedForCommand(
             string expected)
         {
             var sut = Failure.Of(42, expected);
-            Assert.Equal(expected, sut.ErrorMessage);
+            sut.Traverse(x => throw new Exception("should not be in this case"),
+                (x, y) =>
+                {
+                    Assert.Equal(expected, y);
+                });
         }
 
         [Fact]
@@ -44,7 +82,6 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void SuccessIsGuarded(
-            [Frozen] IFixture fixture,
             GuardClauseAssertion assertion)
         {
             assertion.Verify(typeof(Success).GetMethod(nameof(Success.Of)));
@@ -52,7 +89,6 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void FailureIsGuarded(
-            [Frozen] IFixture fixture,
             GuardClauseAssertion assertion)
         {
             assertion.Verify(typeof(Failure).GetMethod(nameof(Failure.Of)));
@@ -60,22 +96,12 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void OutcomesAreGuarded(
-            [Frozen] IFixture fixture,
             GuardClauseAssertion assertion)
         {
             assertion.Verify(typeof(Outcome<string>).GetConstructors());
         }
 
-        [Theory, Gen]
-        public void TryOutcomesAreGuarded(
-            [Frozen] IFixture fixture,
-            GuardClauseAssertion assertion)
-        {
-            assertion.Verify(typeof(TryAsyncOutcomeQuery<string, string>).GetConstructors());
-            assertion.Verify(typeof(TryAsyncOutcomeCommand<string>).GetConstructors());
-        }
-
-        [Theory, Gen]
+        [Fact]
         public void SuccessOfUnitsAreEqual()
         {
             var outcome1 = Success.Of(Unit.Default);
@@ -92,7 +118,7 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.Equal(outcome1, outcome2);
         }
 
-        [Theory, Gen]
+        [Fact]
         public void SuccessfulUnitIsCorrect()
         {
             var expected = Success.Of(Unit.Default);
@@ -109,159 +135,240 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public async Task TryAsyncOutcomeQueryExceptionConditionIsCorrect(
-            Guid arguments,
-            [Frozen] Mock<IAsyncOutcomeQuery<Guid, IEnumerable<string>>> query,
-            string expectedMessage,
-            TryAsyncOutcomeQuery<Guid, string> sut)
+        public void OutcomeEqualitySuccessIsCorrect(string value)
         {
-            query.Setup(x => x.SendQuery(It.IsAny<Guid>()))
-                .ThrowsAsync(new Exception(expectedMessage));
-
-            var actual = await sut.SendQuery(arguments);
-
-            Assert.Empty(actual.Value);
-            Assert.Equal(expectedMessage, actual.ErrorMessage);
-            Assert.False(actual.Succeeded);
+            var oa = Success.Of(value);
+            var ob = Success.Of(value);
+            Assert.True(oa == ob);
+            Assert.True(oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public async Task TryAsyncOutcomeQuerySuccessConditionIsCorrect(
-            string arguments,
-            [Frozen] Mock<IAsyncOutcomeQuery<string, IEnumerable<int>>> query,
-            IEnumerable<int> expected,
-            TryAsyncOutcomeQuery<string, int> sut)
+        public void HashCodeEqualityComparisonForSuccessIsCorrect(string value)
         {
-            query.Setup(x => x.SendQuery(arguments))
-                .ReturnsAsync(Success.Of(expected));
-
-            var actual = await sut.SendQuery(arguments);
-
-            Assert.Equal(expected, actual.Value);
-            Assert.True(actual.Succeeded);
+            var a = Success.Of(value);
+            var b = Success.Of(value);
+            Assert.True(a.GetHashCode() == b.GetHashCode());
         }
 
         [Theory, Gen]
-        public async Task TryAsyncOutcomeCommandExceptionConditionIsCorrect(
-            Guid arguments,
-            [Frozen] Mock<IAsyncOutcomeCommand<Guid>> command,
-            string expectedMessage,
-            TryAsyncOutcomeCommand<Guid> sut)
+        public void HashCodeInEqualityComparisonForSuccessIsCorrect(string value, string value2)
         {
-            command.Setup(x => x.SendCommandAsync(It.IsAny<Guid>()))
-                .ThrowsAsync(new Exception(expectedMessage));
-
-            var actual = await sut.SendCommandAsync(arguments);
-
-            Assert.Equal(Failure.Of(Unit.Default, expectedMessage), actual);
+            var a = Success.Of(value);
+            var b = Success.Of(value2);
+            Assert.False(a.GetHashCode() == b.GetHashCode());
         }
 
         [Theory, Gen]
-        public async Task TryAsyncOutcomeCommandSuccessConditionIsCorrect(
-            long arguments,
-            [Frozen] Mock<IAsyncOutcomeCommand<long>> command,
-            TryAsyncOutcomeCommand<long> sut)
+        public void HashCodeEqualityComparisonForFailureIsCorrect(string value, string error)
         {
-            command.Setup(x => x.SendCommandAsync(arguments))
-                .ReturnsAsync(Success.Of(Unit.Default));
-
-            var actual = await sut.SendCommandAsync(arguments);
-
-            Assert.Equal(Success.Of(Unit.Default), actual);
+            var a = Failure.Of(value, error);
+            var b = Failure.Of(value, error);
+            Assert.True(a.GetHashCode() == b.GetHashCode());
         }
 
         [Theory, Gen]
-        public void TryAsyncOutcomeCommandCreateInfersCorrectly(
-            Mock<IAsyncOutcomeCommand<Guid>> dummyCommand)
+        public void HashCodeInEqualityComparisonForFailureIsCorrect(string value, string value2, string error)
         {
-            var sut = TryAsyncOutcome(dummyCommand.Object);
-            Assert.IsType<TryAsyncOutcomeCommand<Guid>>(sut);
+            var a = Failure.Of(value, error);
+            var b = Failure.Of(value2, error);
+            Assert.False(a.GetHashCode() == b.GetHashCode());
         }
 
         [Theory, Gen]
-        public void TryAsyncOutcomeQueryCreateInfersCorrectly(
-            Mock<IAsyncOutcomeQuery<string, IEnumerable<Guid>>> dummyQuery)
+        public void HashCodeEqualityComparisonOnErrorMessageForFailureIsCorrect(string value, string error, string error2)
         {
-            var sut = TryAsyncOutcome(dummyQuery.Object);
-            Assert.IsType<TryAsyncOutcomeQuery<string, Guid>>(sut);
+            var a = Failure.Of(value, error);
+            var b = Failure.Of(value, error2);
+            Assert.True(a.GetHashCode() != b.GetHashCode());
+        }
+
+        [Fact]
+        public void OutcomeUnitEqualitySuccessIsCorrect()
+        {
+            var oa = Success.Of(Unit.Default);
+            var ob = Success.Of(Unit.Default);
+            Assert.True(oa == ob);
+            Assert.True(oa.Equals(ob));
+        }
+
+        [Fact]
+        public void OutcomeEmptyEqualitySuccessIsCorrect()
+        {
+            var oa = Success.Ok();
+            var ob = Success.Ok();
+            Assert.True(oa == ob);
+            Assert.True(oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public void TryOutcomeQueryExceptionConditionIsCorrect(
-            Guid arguments,
-            [Frozen] Mock<IOutcomeQuery<Guid, IEnumerable<string>>> query,
-            string expectedMessage,
-            TryOutcomeQuery<Guid, string> sut)
+        public void OutcomeEqualityFailureIsCorrect(string value, string errorMessage)
         {
-            query.Setup(x => x.SendQuery(It.IsAny<Guid>()))
-                .Throws(new Exception(expectedMessage));
-
-            var actual = sut.SendQuery(arguments);
-
-            Assert.Empty(actual.Value);
-            Assert.Equal(expectedMessage, actual.ErrorMessage);
-            Assert.False(actual.Succeeded);
+            var oa = Failure.Of(value, errorMessage);
+            var ob = Failure.Of(value, errorMessage);
+            Assert.True(oa == ob);
+            Assert.True(oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public void TryOutcomeQuerySuccessConditionIsCorrect(
-            string arguments,
-            [Frozen] Mock<IOutcomeQuery<string, IEnumerable<int>>> query,
-            IEnumerable<int> expected,
-            TryOutcomeQuery<string, int> sut)
+        public void OutcomeUnitEqualityFailureIsCorrect(string errorMessage)
         {
-            query.Setup(x => x.SendQuery(arguments))
-                .Returns(Success.Of(expected));
-
-            var actual = sut.SendQuery(arguments);
-
-            Assert.Equal(expected, actual.Value);
-            Assert.True(actual.Succeeded);
+            var oa = Failure.Of(Unit.Default, errorMessage);
+            var ob = Failure.Of(Unit.Default, errorMessage);
+            Assert.True(oa == ob);
+            Assert.True(oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public void TryOutcomeCommandExceptionConditionIsCorrect(
-            Guid arguments,
-            [Frozen] Mock<IOutcomeCommand<Guid>> command,
-            string expectedMessage,
-            TryOutcomeCommand<Guid> sut)
+        public void OutcomeEmptyEqualityFailureIsCorrect(string errorMessage)
         {
-            command.Setup(x => x.SendCommand(It.IsAny<Guid>()))
-                .Throws(new Exception(expectedMessage));
-
-            var actual = sut.SendCommand(arguments);
-
-            Assert.Equal(Failure.Of(Unit.Default, expectedMessage), actual);
+            var oa = Failure.Nok(errorMessage);
+            var ob = Failure.Nok(errorMessage);
+            Assert.True(oa == ob);
+            Assert.True(oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public void TryOutcomeCommandSuccessConditionIsCorrect(
-            long arguments,
-            [Frozen] Mock<IOutcomeCommand<long>> command,
-            TryOutcomeCommand<long> sut)
+        public void OutcomeInequalitySuccessIsCorrect(string value)
         {
-            command.Setup(x => x.SendCommand(arguments))
-                .Returns(Success.Of(Unit.Default));
+            var oa = Success.Of(value);
+            var ob = Success.Of(value);
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
+        }
 
-            var actual = sut.SendCommand(arguments);
+        [Fact]
+        public void OutcomeUnitInequalitySuccessIsCorrect()
+        {
+            var oa = Success.Of(Unit.Default);
+            var ob = Success.Of(Unit.Default);
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
+        }
 
-            Assert.Equal(Success.Of(Unit.Default), actual);
+        [Fact]
+        public void OutcomeEmptyInequalitySuccessIsCorrect()
+        {
+            var oa = Success.Ok();
+            var ob = Success.Ok();
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public void TryOutcomeCommandCreateInfersCorrectly(
-            Mock<IOutcomeCommand<Guid>> dummyCommand)
+        public void OutcomeInequalityFailureIsCorrect(string value, string errorMessage)
         {
-            var sut = TryOutcome(dummyCommand.Object);
-            Assert.IsType<TryOutcomeCommand<Guid>>(sut);
+            var oa = Failure.Of(value, errorMessage);
+            var ob = Failure.Of(value, errorMessage);
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
         }
 
         [Theory, Gen]
-        public void TryOutcomeQueryCreateInfersCorrectly(
-            Mock<IOutcomeQuery<string, IEnumerable<Guid>>> dummyQuery)
+        public void OutcomeUnitInequalityFailureIsCorrect(string errorMessage)
         {
-            var sut = TryOutcome(dummyQuery.Object);
-            Assert.IsType<TryOutcomeQuery<string, Guid>>(sut);
+            var oa = Failure.Of(Unit.Default, errorMessage);
+            var ob = Failure.Of(Unit.Default, errorMessage);
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeEmptyInequalityFailureIsCorrect(string errorMessage)
+        {
+            var oa = Failure.Nok(errorMessage);
+            var ob = Failure.Nok(errorMessage);
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeEqualityDifferentSuccessIsCorrect(string value, string value2)
+        {
+            var oa = Success.Of(value);
+            var ob = Success.Of(value2);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeEqualityDifferentFailureIsCorrect(string value, string value2, string errorMessage)
+        {
+            var oa = Failure.Of(value, errorMessage);
+            var ob = Failure.Of(value2, errorMessage);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+        
+        [Theory, Gen]
+        public void SuccessAndFailureAreNotEqual(string error)
+        {
+            var a = Success.Ok();
+            var b = Failure.Nok(error);
+
+            Assert.True(a != b);
+            Assert.True(!a.Equals(b));
+        }
+
+        [Theory, Gen]
+        public void AnonymousObjectComparisonFails(string error)
+        {
+            Assert.True(!Success.Ok().Equals(new { }));
+            Assert.True(!Failure.Nok(error).Equals(new { }));
+        }
+
+        [Theory, Gen]
+        public void OutcomeUnitEqualityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
+        {
+            var oa = Failure.Of(Unit.Default, errorMessage);
+            var ob = Failure.Of(Unit.Default, errorMessage2);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeEmptyEqualityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
+        {
+            var oa = Failure.Nok(errorMessage);
+            var ob = Failure.Nok(errorMessage2);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeInequalityDifferentSuccessIsCorrect(string value, string value2)
+        {
+            var oa = Success.Of(value);
+            var ob = Success.Of(value2);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeInequalityDifferentFailureIsCorrect(string value, string value2, string errorMessage)
+        {
+            var oa = Failure.Of(value, errorMessage);
+            var ob = Failure.Of(value2, errorMessage);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeUnitInequalityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
+        {
+            var oa = Failure.Of(Unit.Default, errorMessage);
+            var ob = Failure.Of(Unit.Default, errorMessage2);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
+        }
+
+        [Theory, Gen]
+        public void OutcomeEmptyDifferentInequalityFailureIsCorrect(string errorMessage, string errorMessage2)
+        {
+            var oa = Failure.Nok(errorMessage);
+            var ob = Failure.Nok(errorMessage2);
+            Assert.True(oa != ob);
+            Assert.True(!oa.Equals(ob));
         }
     }
 }

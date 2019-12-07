@@ -7,12 +7,12 @@ namespace LanguagePatternsAndExtensions
         public static Outcome<T> Of<T>(T value)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
-            return new Outcome<T>(value, true);
+            return new Outcome<T>(value);
         }
 
         public static Outcome<Unit> Ok()
         {
-            return new Outcome<Unit>(Unit.Default, true);
+            return new Outcome<Unit>(Unit.Default);
         }
     }
 }

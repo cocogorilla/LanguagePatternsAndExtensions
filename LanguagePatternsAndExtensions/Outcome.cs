@@ -7,8 +7,6 @@ namespace LanguagePatternsAndExtensions
     {
         public bool Equals(Outcome<TValue> other)
         {
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
             return EqualityComparer<TValue>.Default.Equals(Value, other.Value)
                    && string.Equals(ErrorMessage, other.ErrorMessage, StringComparison.InvariantCulture)
                    && Succeeded == other.Succeeded;
@@ -17,8 +15,7 @@ namespace LanguagePatternsAndExtensions
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj is Outcome<TValue> && Equals((Outcome<TValue>)obj);
+            return obj is Outcome<TValue> outcome && Equals(outcome);
         }
 
         public override int GetHashCode()
@@ -42,31 +39,39 @@ namespace LanguagePatternsAndExtensions
             return !Equals(left, right);
         }
 
-        public Outcome(TValue value, bool succeeded, string errorMessage = "")
+        public Outcome(TValue value)
         {
             if (value == null) throw new ArgumentNullException(nameof(value));
-            if (errorMessage == null) throw new ArgumentNullException(nameof(errorMessage));
             Value = value;
-            ErrorMessage = errorMessage;
-            Succeeded = succeeded;
+            ErrorMessage = "";
+            Succeeded = true;
         }
 
-        public TResult Traverse<TResult>(Func<TValue, TResult> success, Func<TValue, string, TResult> error)
+        public Outcome(string errorMessage = "")
+        {
+            if (string.IsNullOrWhiteSpace(errorMessage))
+                throw new ArgumentNullException(nameof(errorMessage), "error message string may not be empty");
+            ErrorMessage = errorMessage;
+            Succeeded = false;
+            Value = default(TValue);
+        }
+
+        public TResult Traverse<TResult>(Func<TValue, TResult> success, Func<string, TResult> error)
         {
             if (success == null) throw new ArgumentNullException(nameof(success));
             if (error == null) throw new ArgumentNullException(nameof(error));
 
             if (Succeeded) return success(Value);
-            return error(Value, ErrorMessage);
+            return error(ErrorMessage);
         }
 
-        public Unit Traverse(Action<TValue> success, Action<TValue, string> error)
+        public Unit Traverse(Action<TValue> success, Action<string> error)
         {
             if (success == null) throw new ArgumentNullException(nameof(success));
             if (error == null) throw new ArgumentNullException(nameof(error));
 
             if (Succeeded) success(Value);
-            else error(Value, ErrorMessage);
+            else error(ErrorMessage);
 
             return Unit.Default;
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Moq;
 using AutoFixture;
@@ -21,10 +22,7 @@ namespace LanguagePatternsAndExtensions.Tests
             {
                 Assert.Equal(expected, x);
                 return successValue;
-            }, (x, y) =>
-            {
-                throw new Exception("should not be in this case");
-            });
+            }, x => throw new Exception("should not be in this case"));
             Assert.Equal(result, successValue);
         }
 
@@ -36,7 +34,7 @@ namespace LanguagePatternsAndExtensions.Tests
             sut.Traverse(x =>
             {
                 Assert.Equal(expected, x);
-            }, (x, y) => throw new Exception("should not be in this case"));
+            }, x => throw new Exception("should not be in this case"));
         }
 
         [Fact]
@@ -48,14 +46,13 @@ namespace LanguagePatternsAndExtensions.Tests
 
         [Theory, Gen]
         public void FailureMessageIsExpectedForQuery(
-            string expected,
             string customError)
         {
-            var sut = Failure.Of(42, expected);
+            var sut = Failure.Nok<int>(customError);
             var result = sut.Traverse(x => throw new Exception("should not be in this case"),
-                (x, y) =>
+                (x) =>
                 {
-                    Assert.Equal(expected, y);
+                    Assert.Equal(customError, x);
                     return customError;
                 });
             Assert.Equal(customError, result);
@@ -65,18 +62,18 @@ namespace LanguagePatternsAndExtensions.Tests
         public void FailureMessageIsExpectedForCommand(
             string expected)
         {
-            var sut = Failure.Of(42, expected);
+            var sut = Failure.Nok<int>(expected);
             sut.Traverse(x => throw new Exception("should not be in this case"),
-                (x, y) =>
+                (x) =>
                 {
-                    Assert.Equal(expected, y);
+                    Assert.Equal(expected, x);
                 });
         }
 
         [Fact]
         public void FailureDidNotSucceed()
         {
-            var sut = Failure.Of(default(int), "some message");
+            var sut = Failure.Nok<int>("some message");
             Assert.False(sut.Succeeded);
         }
 
@@ -91,7 +88,7 @@ namespace LanguagePatternsAndExtensions.Tests
         public void FailureIsGuarded(
             GuardClauseAssertion assertion)
         {
-            assertion.Verify(typeof(Failure).GetMethod(nameof(Failure.Of)));
+            assertion.Verify(typeof(Failure).GetMethod(nameof(Failure.Nok)));
         }
 
         [Theory, Gen]
@@ -113,8 +110,8 @@ namespace LanguagePatternsAndExtensions.Tests
         public void FailureOfUnitsAreEqual(
             string message)
         {
-            var outcome1 = Failure.Of(Unit.Default, message);
-            var outcome2 = Failure.Of(Unit.Default, message);
+            var outcome1 = Failure.Nok<Unit>(message);
+            var outcome2 = Failure.Nok<Unit>(message);
             Assert.Equal(outcome1, outcome2);
         }
 
@@ -129,9 +126,15 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void FailureUnitIsCorrect(string expectedMessage)
         {
-            var expected = Failure.Of(Unit.Default, expectedMessage);
-            var actual = Failure.Nok(expectedMessage);
-            Assert.Equal(expected, actual);
+            var expected = Failure.Nok<Unit>(expectedMessage);
+            var actual = Failure.Nok<Unit>(expectedMessage);
+            expected.Traverse(x => { }, x =>
+            {
+                actual.Traverse(y => { }, y =>
+                    {
+                        Assert.Equal(x, y);
+                    });
+            });
         }
 
         [Theory, Gen]
@@ -160,26 +163,26 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public void HashCodeEqualityComparisonForFailureIsCorrect(string value, string error)
+        public void HashCodeEqualityComparisonForFailureIsCorrect(string error)
         {
-            var a = Failure.Of(value, error);
-            var b = Failure.Of(value, error);
+            var a = Failure.Nok<string>(error);
+            var b = Failure.Nok<string>(error);
             Assert.True(a.GetHashCode() == b.GetHashCode());
         }
 
         [Theory, Gen]
-        public void HashCodeInEqualityComparisonForFailureIsCorrect(string value, string value2, string error)
+        public void HashCodeInEqualityComparisonForFailureIsCorrect(string error, string error2)
         {
-            var a = Failure.Of(value, error);
-            var b = Failure.Of(value2, error);
+            var a = Failure.Nok<int>(error);
+            var b = Failure.Nok<int>(error2);
             Assert.False(a.GetHashCode() == b.GetHashCode());
         }
 
         [Theory, Gen]
-        public void HashCodeEqualityComparisonOnErrorMessageForFailureIsCorrect(string value, string error, string error2)
+        public void HashCodeEqualityComparisonOnErrorMessageForFailureIsCorrect(string error, string error2)
         {
-            var a = Failure.Of(value, error);
-            var b = Failure.Of(value, error2);
+            var a = Failure.Nok<decimal>(error);
+            var b = Failure.Nok<decimal>(error2);
             Assert.True(a.GetHashCode() != b.GetHashCode());
         }
 
@@ -204,8 +207,8 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void OutcomeEqualityFailureIsCorrect(string value, string errorMessage)
         {
-            var oa = Failure.Of(value, errorMessage);
-            var ob = Failure.Of(value, errorMessage);
+            var oa = Failure.Nok<Guid>(errorMessage);
+            var ob = Failure.Nok<Guid>(errorMessage);
             Assert.True(oa == ob);
             Assert.True(oa.Equals(ob));
         }
@@ -213,8 +216,8 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void OutcomeUnitEqualityFailureIsCorrect(string errorMessage)
         {
-            var oa = Failure.Of(Unit.Default, errorMessage);
-            var ob = Failure.Of(Unit.Default, errorMessage);
+            var oa = Failure.Nok<double?>(errorMessage);
+            var ob = Failure.Nok<double?>(errorMessage);
             Assert.True(oa == ob);
             Assert.True(oa.Equals(ob));
         }
@@ -222,8 +225,8 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void OutcomeEmptyEqualityFailureIsCorrect(string errorMessage)
         {
-            var oa = Failure.Nok(errorMessage);
-            var ob = Failure.Nok(errorMessage);
+            var oa = Failure.Nok<Fixture>(errorMessage);
+            var ob = Failure.Nok<Fixture>(errorMessage);
             Assert.True(oa == ob);
             Assert.True(oa.Equals(ob));
         }
@@ -258,8 +261,8 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void OutcomeInequalityFailureIsCorrect(string value, string errorMessage)
         {
-            var oa = Failure.Of(value, errorMessage);
-            var ob = Failure.Of(value, errorMessage);
+            var oa = Failure.Nok<string>(errorMessage);
+            var ob = Failure.Nok<string>(errorMessage);
             Assert.False(oa != ob);
             Assert.False(!oa.Equals(ob));
         }
@@ -267,8 +270,8 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void OutcomeUnitInequalityFailureIsCorrect(string errorMessage)
         {
-            var oa = Failure.Of(Unit.Default, errorMessage);
-            var ob = Failure.Of(Unit.Default, errorMessage);
+            var oa = Failure.Nok<Unit>(errorMessage);
+            var ob = Failure.Nok<Unit>(errorMessage);
             Assert.False(oa != ob);
             Assert.False(!oa.Equals(ob));
         }
@@ -276,8 +279,8 @@ namespace LanguagePatternsAndExtensions.Tests
         [Theory, Gen]
         public void OutcomeEmptyInequalityFailureIsCorrect(string errorMessage)
         {
-            var oa = Failure.Nok(errorMessage);
-            var ob = Failure.Nok(errorMessage);
+            var oa = Failure.Nok<Unit>(errorMessage);
+            var ob = Failure.Nok<Unit>(errorMessage);
             Assert.False(oa != ob);
             Assert.False(!oa.Equals(ob));
         }
@@ -292,19 +295,10 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public void OutcomeEqualityDifferentFailureIsCorrect(string value, string value2, string errorMessage)
-        {
-            var oa = Failure.Of(value, errorMessage);
-            var ob = Failure.Of(value2, errorMessage);
-            Assert.True(oa != ob);
-            Assert.True(!oa.Equals(ob));
-        }
-        
-        [Theory, Gen]
         public void SuccessAndFailureAreNotEqual(string error)
         {
             var a = Success.Ok();
-            var b = Failure.Nok(error);
+            var b = Failure.Nok<Unit>(error);
 
             Assert.True(a != b);
             Assert.True(!a.Equals(b));
@@ -314,23 +308,14 @@ namespace LanguagePatternsAndExtensions.Tests
         public void AnonymousObjectComparisonFails(string error)
         {
             Assert.True(!Success.Ok().Equals(new { }));
-            Assert.True(!Failure.Nok(error).Equals(new { }));
+            Assert.True(!Failure.Nok<Unit>(error).Equals(new { }));
         }
 
         [Theory, Gen]
         public void OutcomeUnitEqualityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
         {
-            var oa = Failure.Of(Unit.Default, errorMessage);
-            var ob = Failure.Of(Unit.Default, errorMessage2);
-            Assert.True(oa != ob);
-            Assert.True(!oa.Equals(ob));
-        }
-
-        [Theory, Gen]
-        public void OutcomeEmptyEqualityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
-        {
-            var oa = Failure.Nok(errorMessage);
-            var ob = Failure.Nok(errorMessage2);
+            var oa = Failure.Nok<Unit>(errorMessage);
+            var ob = Failure.Nok<Unit>(errorMessage2);
             Assert.True(oa != ob);
             Assert.True(!oa.Equals(ob));
         }
@@ -345,28 +330,19 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
-        public void OutcomeInequalityDifferentFailureIsCorrect(string value, string value2, string errorMessage)
+        public void OutcomeInequalityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
         {
-            var oa = Failure.Of(value, errorMessage);
-            var ob = Failure.Of(value2, errorMessage);
-            Assert.True(oa != ob);
-            Assert.True(!oa.Equals(ob));
+            var oa = Failure.Nok<string>(errorMessage);
+            var ob = Failure.Nok<string>(errorMessage);
+            Assert.False(oa != ob);
+            Assert.False(!oa.Equals(ob));
         }
 
         [Theory, Gen]
         public void OutcomeUnitInequalityDifferentFailureIsCorrect(string errorMessage, string errorMessage2)
         {
-            var oa = Failure.Of(Unit.Default, errorMessage);
-            var ob = Failure.Of(Unit.Default, errorMessage2);
-            Assert.True(oa != ob);
-            Assert.True(!oa.Equals(ob));
-        }
-
-        [Theory, Gen]
-        public void OutcomeEmptyDifferentInequalityFailureIsCorrect(string errorMessage, string errorMessage2)
-        {
-            var oa = Failure.Nok(errorMessage);
-            var ob = Failure.Nok(errorMessage2);
+            var oa = Failure.Nok<Unit>(errorMessage);
+            var ob = Failure.Nok<Unit>(errorMessage2);
             Assert.True(oa != ob);
             Assert.True(!oa.Equals(ob));
         }

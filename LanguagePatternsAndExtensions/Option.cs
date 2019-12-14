@@ -24,6 +24,9 @@ namespace LanguagePatternsAndExtensions
             _item = default(T);
             _hasItem = false;
         }
+        
+        public bool IsSome => _hasItem;
+        public bool IsNone => !_hasItem;
 
         public static Option<T> Some(IEnumerable<T> source)
         {

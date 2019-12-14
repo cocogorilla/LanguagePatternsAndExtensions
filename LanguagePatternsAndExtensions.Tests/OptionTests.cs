@@ -81,5 +81,14 @@ namespace LanguagePatternsAndExtensions.Tests
 
             Assert.NotEqual(testone, testtwo);
         }
+
+        [Theory, Gen]
+        public void NoneIsNoneSetCorrectly()
+        {
+            var foo = Option<int>.None();
+
+            Assert.True(foo.IsNone);
+            Assert.False(foo.IsSome);
+        }
     }
 }

@@ -1,12 +1,17 @@
 using System;
-using System.Linq;
-using System.Runtime.InteropServices;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using AutoFixture;
 using Xunit;
 using static LanguagePatternsAndExtensions.Option<string>;
 
 namespace LanguagePatternsAndExtensions.Tests
 {
+    public class TestClass
+    {
+        public string Whatever { get; set; }
+    }
+
     public class OptionTests
     {
 
@@ -21,39 +26,24 @@ namespace LanguagePatternsAndExtensions.Tests
                 "", x => x);
             Assert.Equal(nonnullstring, outcome);
             var sut2 = nullstring.ToOption();
-            Assert.Equal(Option<string>.None(), sut2);
-            var sut3 = Option<string>.Some(nonnullstring);
+            Assert.Equal(None(), sut2);
+            var sut3 = Some(nonnullstring);
             Assert.Equal(sut, sut3);
             Assert.Equal(Option<int>.None(), Option<int>.None());
-            Assert.Equal(Option<string>.Some(nullstring), Option<string>.None());
-            Assert.Equal(None(), Option<string>.None());
-            Assert.Equal(None(), Enumerable.Empty<string>().ToOption());
-            Assert.NotEqual("test".ToOption(), Enumerable.Empty<string>().ToOption());
+            Assert.Equal(Some(nullstring), None());
+            Assert.Equal(None(), None());
+            Assert.Equal(Option<IEnumerable<string>>.None(), ((IEnumerable<string>)null).ToOption());
+            Assert.NotEqual("test".ToOption(), string.Empty.ToOption());
             Assert.Equal("test".ToOption(), "test".ToOption());
-            Assert.Equal("test".ToOption(), Option<string>.Some("test"));
-        }
-
-        [Fact]
-        public void OptionConversionsAreCorrect()
-        {
-            var fixture = new Fixture();
-            var toomany = fixture.CreateMany<string>(2);
-            var justright = fixture.CreateMany<string>(1);
-            Assert.Throws<ArgumentException>(() =>
-            {
-                var test1 = toomany.ToOption();
-            });
-            Option<string> test2 = justright.ToOption();
-            var outcome = test2.Match("", x => x);
-            Assert.Equal(justright.Single(), outcome);
+            Assert.Equal("test".ToOption(), Some("test"));
         }
 
         [Theory, Gen]
         public void TwoSomeOptionsSameValueAreEqual(
             string foo)
         {
-            var optionOne = Option<string>.Some(foo);
-            var optionTwo = Option<string>.Some(foo);
+            var optionOne = Some(foo);
+            var optionTwo = Some(foo);
 
             Assert.Equal(optionOne, optionTwo);
         }
@@ -89,6 +79,25 @@ namespace LanguagePatternsAndExtensions.Tests
 
             Assert.True(foo.IsNone);
             Assert.False(foo.IsSome);
+        }
+
+        [Theory, Gen]
+        public void CanUseParsing(
+            TestClass input)
+        {
+            var dictionary = new ConcurrentDictionary<int, TestClass>();
+            dictionary.AddOrUpdate(4, x => input, (x, y) => input);
+            Option<TestClass> final;
+            if (dictionary.TryGetValue(4, out TestClass found))
+            {
+                final = Option<TestClass>.Some(found);
+            }
+            else
+            {
+                final = Option<TestClass>.None();
+            }
+            Assert.True(final.IsSome);
+            Assert.False(final.IsNone);
         }
     }
 }

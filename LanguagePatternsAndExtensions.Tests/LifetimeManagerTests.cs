@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using AutoFixture;
 using AutoFixture.Idioms;
-using AutoFixture.Xunit2;
 using Xunit;
 
 namespace LanguagePatternsAndExtensions.Tests
@@ -86,6 +85,32 @@ namespace LanguagePatternsAndExtensions.Tests
                 async () => null);
             var sut = fixture.Create<LifeTimeManager<string>>();
             await Assert.ThrowsAsync<LifeTimeManagerException>(async () => await sut.ReceiveMessage());
+        }
+
+        [Theory, Gen]
+        public async void NewObjectIsGeneratedWhenForciblyUpdated(
+            TestObject oldObject,
+            TestObject newObject,
+            IFixture fixture)
+        {
+            int callCount = 0;
+            fixture.Inject<Func<Task<TestObject>>>(
+                async () =>
+                {
+                    if (callCount == 0) return await Task.FromResult(oldObject);
+                    if (callCount == 1) return await Task.FromResult(newObject);
+                    return await Task.FromException<TestObject>(new Exception("should never have gotten here"));
+                }); ;
+
+            var sut = fixture.Create<LifeTimeManager<TestObject>>();
+
+            var e1 = await sut.ReceiveMessage();
+            Assert.Equal(e1, oldObject);
+            var e2 = await sut.ReceiveMessage();
+            Assert.Equal(e2, oldObject);
+            callCount++;
+            var e3 = await sut.ReceiveMessage(true);
+            Assert.Equal(e3, newObject);
         }
     }
 }

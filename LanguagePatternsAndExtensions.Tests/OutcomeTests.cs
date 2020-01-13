@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Moq;
 using AutoFixture;
 using AutoFixture.Idioms;
-using AutoFixture.Xunit2;
 using Xunit;
 
 namespace LanguagePatternsAndExtensions.Tests

@@ -1,44 +1,26 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace LanguagePatternsAndExtensions
 {
     public struct Option<T>
     {
         private readonly T _item;
-        private readonly bool _hasItem;
 
         public Option(T item)
         {
             if (item == null) throw new ArgumentNullException(nameof(item));
             _item = item;
-            _hasItem = true;
+            IsSome = true;
         }
 
         public Option(Unit none)
         {
-            _item = default(T);
-            _hasItem = false;
+            _item = default;
+            IsSome = false;
         }
-        
-        public bool IsSome => _hasItem;
-        public bool IsNone => !_hasItem;
 
-        public static Option<T> Some(IEnumerable<T> source)
-        {
-            if (source.Count() > 1)
-                throw new ArgumentException("source for Option cannot enumerate more than once");
-
-            var item = source.SingleOrDefault();
-
-            return item != null
-                ? new Option<T>(item)
-                : new Option<T>(Unit.Default);
-        }
+        public bool IsSome { get; }
+        public bool IsNone => !IsSome;
 
         public static Option<T> Some(T source)
         {
@@ -57,7 +39,7 @@ namespace LanguagePatternsAndExtensions
             if (nothing == null) throw new ArgumentNullException(nameof(nothing));
             if (just == null) throw new ArgumentNullException(nameof(just));
 
-            return (_hasItem)
+            return (IsSome)
                 ? just(_item)
                 : nothing;
         }

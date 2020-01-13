@@ -21,12 +21,12 @@ namespace LanguagePatternsAndExtensions
             _semaphoreSlim = new SemaphoreSlim(1, 1);
         }
 
-        public async Task<T> ReceiveMessage()
+        public async Task<T> ReceiveMessage(bool forceRefresh = false)
         {
             await _semaphoreSlim.WaitAsync();
             try
             {
-                if (!_initialized || _expirationDecider(_instance))
+                if (!_initialized || _expirationDecider(_instance) || forceRefresh)
                 {
                     if (!_initialized)
                         _initialized = true;

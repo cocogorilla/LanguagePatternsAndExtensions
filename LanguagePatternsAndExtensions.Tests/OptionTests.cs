@@ -24,6 +24,14 @@ namespace LanguagePatternsAndExtensions.Tests
             var sut = nonnullstring.ToOption();
             var outcome = sut.Match(
                 "", x => x);
+            var apples = "apples".ToOption();
+            Assert.Equal("apples", apples.Traverse(x => x));
+            Assert.Throws<NullReferenceException>(() =>
+            {
+                string empty = null;
+                var foo = empty.ToOption();
+                var fail = foo.Traverse(x => x.Length);
+            });
             Assert.Equal(nonnullstring, outcome);
             var sut2 = nullstring.ToOption();
             Assert.Equal(None(), sut2);

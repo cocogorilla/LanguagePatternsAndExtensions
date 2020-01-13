@@ -34,14 +34,19 @@ namespace LanguagePatternsAndExtensions
             return new Option<T>(Unit.Default);
         }
 
-        public TResult Match<TResult>(TResult nothing, Func<T, TResult> just)
+        public TResult Match<TResult>(TResult nothing, Func<T, TResult> some)
         {
             if (nothing == null) throw new ArgumentNullException(nameof(nothing));
-            if (just == null) throw new ArgumentNullException(nameof(just));
+            if (some == null) throw new ArgumentNullException(nameof(some));
 
             return (IsSome)
-                ? just(_item)
+                ? some(_item)
                 : nothing;
+        }
+
+        public TResult Traverse<TResult>(Func<T, TResult> transform)
+        {
+            return transform(_item);
         }
     }
 }

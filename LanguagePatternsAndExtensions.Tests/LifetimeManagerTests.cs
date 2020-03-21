@@ -32,6 +32,22 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
+        public async void NewObjectIsGeneratedOnlyOnceOnFirstCall(
+            IFixture fixture)
+        {
+            var callCount = 0;
+            fixture.Inject<Func<Task<int>>>(
+                async () =>
+                {
+                    callCount++;
+                    return callCount;
+                });
+            var sut = fixture.Create<LifeTimeManager<int>>();
+            var actual = await sut.ReceiveMessage();
+            Assert.Equal(1, actual);
+        }
+
+        [Theory, Gen]
         public async void SameObjectIsGeneratedWhenNotExpired(
             TestObject expected,
             IFixture fixture)

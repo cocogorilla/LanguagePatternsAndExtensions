@@ -14,10 +14,8 @@ namespace LanguagePatternsAndExtensions
 
         public LifeTimeManager(Func<Task<T>> receiverAsync, Func<T, bool> expirationDecider)
         {
-            if (receiverAsync == null) throw new ArgumentNullException(nameof(receiverAsync));
-            if (expirationDecider == null) throw new ArgumentNullException(nameof(expirationDecider));
-            _receiverAsync = receiverAsync;
-            _expirationDecider = expirationDecider;
+            _receiverAsync = receiverAsync ?? throw new ArgumentNullException(nameof(receiverAsync));
+            _expirationDecider = expirationDecider ?? throw new ArgumentNullException(nameof(expirationDecider));
             _semaphoreSlim = new SemaphoreSlim(1, 1);
         }
 
@@ -33,7 +31,7 @@ namespace LanguagePatternsAndExtensions
                     var result = await _receiverAsync();
                     if (result == null)
                         throw new LifeTimeManagerException("retrieval of the instance was null: null is not a supported value for lifetime management");
-                    _instance = await _receiverAsync();
+                    _instance = result;
                 }
             }
             finally

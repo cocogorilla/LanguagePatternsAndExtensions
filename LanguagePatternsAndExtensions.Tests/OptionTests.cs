@@ -1,6 +1,8 @@
 using System;
+using System.CodeDom;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using AutoFixture;
 using Xunit;
 using static LanguagePatternsAndExtensions.Option<string>;
@@ -106,6 +108,103 @@ namespace LanguagePatternsAndExtensions.Tests
             }
             Assert.True(final.IsSome);
             Assert.False(final.IsNone);
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectManyQueryForm(
+            string one,
+            string two,
+            string three)
+        {
+            var a = one.ToOption();
+            var b = two.ToOption();
+            var c = three.ToOption();
+
+            var actual =
+                from aa in a
+                from bb in b
+                from cc in c
+                select aa + bb + cc;
+
+            Assert.Equal(one + two + three, actual.Traverse(x => x));
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectManyWithNullQueryForm(
+            string one,
+            string two,
+            string three)
+        {
+            three = null;
+            var a = one.ToOption();
+            var b = two.ToOption();
+            var c = three.ToOption();
+
+            var actual =
+                from aa in a
+                from bb in b
+                from cc in c
+                select aa + bb + cc;
+
+            Assert.Equal(None(), actual);
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectMany(
+            string one,
+            string two,
+            string three)
+        {
+            var a = one.ToOption();
+            var b = two.ToOption();
+            var c = three.ToOption();
+
+            var actual = a
+                .SelectMany(x =>
+                    b.SelectMany(y =>
+                        c.SelectMany(z =>
+                            (x + y + z).ToOption())));
+
+            Assert.Equal(one + two + three, actual.Traverse(x => x));
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectManyWithNull(
+            string one,
+            string two,
+            string three)
+        {
+            three = null;
+            var a = one.ToOption();
+            var b = two.ToOption();
+            var c = three.ToOption();
+
+            var actual = a
+                .SelectMany(x =>
+                    b.SelectMany(y =>
+                        c.SelectMany(z =>
+                            (x + y + z).ToOption())));
+
+            Assert.Equal(None(), actual);
+        }
+
+        [Theory, Gen]
+        public void CanDealWithMixedTypes(
+            int one,
+            string two,
+            TestClass tclass)
+        {
+            var a = one.ToOption();
+            var b = two.ToOption();
+            var c = tclass.ToOption();
+
+            var actual =
+                from aa in a
+                from bb in b
+                from cc in c
+                select aa + bb + cc.Whatever;
+
+            Assert.Equal(one + two + tclass.Whatever, actual.Traverse(x => x));
         }
     }
 }

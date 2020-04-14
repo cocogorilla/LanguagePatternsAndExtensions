@@ -44,7 +44,15 @@ namespace LanguagePatternsAndExtensions
                 : nothing;
         }
 
-        public TResult Traverse<TResult>(Func<T, TResult> transform)
+        /// <summary>
+        /// Unsafe, directly retrieve a value assuming it is not null and apply a func transform
+        /// Example: var theValue = optional.GetValue(x => x);
+        /// theValue may be null
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="transform"></param>
+        /// <returns></returns>
+        public TResult GetValue<TResult>(Func<T, TResult> transform)
         {
             return transform(_item);
         }

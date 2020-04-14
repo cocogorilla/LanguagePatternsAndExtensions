@@ -27,12 +27,12 @@ namespace LanguagePatternsAndExtensions.Tests
             var outcome = sut.Match(
                 "", x => x);
             var apples = "apples".ToOption();
-            Assert.Equal("apples", apples.Traverse(x => x));
+            Assert.Equal("apples", apples.GetValue(x => x));
             Assert.Throws<NullReferenceException>(() =>
             {
                 string empty = null;
                 var foo = empty.ToOption();
-                var fail = foo.Traverse(x => x.Length);
+                var fail = foo.GetValue(x => x.Length);
             });
             Assert.Equal(nonnullstring, outcome);
             var sut2 = nullstring.ToOption();
@@ -126,7 +126,7 @@ namespace LanguagePatternsAndExtensions.Tests
                 from cc in c
                 select aa + bb + cc;
 
-            Assert.Equal(one + two + three, actual.Traverse(x => x));
+            Assert.Equal(one + two + three, actual.GetValue(x => x));
         }
 
         [Theory, Gen]
@@ -165,7 +165,7 @@ namespace LanguagePatternsAndExtensions.Tests
                         c.SelectMany(z =>
                             (x + y + z).ToOption())));
 
-            Assert.Equal(one + two + three, actual.Traverse(x => x));
+            Assert.Equal(one + two + three, actual.GetValue(x => x));
         }
 
         [Theory, Gen]
@@ -202,9 +202,9 @@ namespace LanguagePatternsAndExtensions.Tests
                 from aa in a
                 from bb in b
                 from cc in c
-                select aa + bb + cc.Whatever;
+                select new TestClass { Whatever = aa + bb };
 
-            Assert.Equal(one + two + tclass.Whatever, actual.Traverse(x => x));
+            Assert.Equal(one + two, actual.GetValue(x => x).Whatever);
         }
     }
 }

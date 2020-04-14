@@ -341,5 +341,102 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.True(oa != ob);
             Assert.True(!oa.Equals(ob));
         }
+
+        [Theory, Gen]
+        public void CanChainSelectManyQueryForm(
+            string one,
+            string two,
+            string three)
+        {
+            var a = Success.Of(one);
+            var b = Success.Of(two);
+            var c = Success.Of(three);
+
+            var actual =
+                from aa in a
+                from bb in b
+                from cc in c
+                select aa + bb + cc;
+
+            Assert.Equal(Success.Of(one + two + three), actual);
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectManyWithFailureQueryForm(
+            string one,
+            string two,
+            string three)
+        {
+            var a = Success.Of(one);
+            var c = Failure.Nok<string>(two);
+            var b = Success.Of(three);
+
+            var actual =
+                from aa in a
+                from bb in b
+                from cc in c
+                select aa + bb + cc;
+
+            Assert.Equal(Failure.Nok<string>(two), actual);
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectMany(
+            string one,
+            string two,
+            string three)
+        {
+            var a = Success.Of(one);
+            var b = Success.Of(two);
+            var c = Success.Of(three);
+
+            var actual = a
+                .SelectMany(x =>
+                    b.SelectMany(y =>
+                        c.SelectMany(z =>
+                            Success.Of(x + y + z))));
+
+            Assert.Equal(Success.Of(one + two + three), actual);
+        }
+
+        [Theory, Gen]
+        public void CanChainSelectManyWithFailure(
+            string one,
+            string two,
+            string three)
+        {
+            var a = Success.Of(one);
+            var b = Failure.Nok<string>(two);
+            var c = Success.Of(three);
+
+            var actual = a
+                .SelectMany(x =>
+                    b.SelectMany(y =>
+                        c.SelectMany(z =>
+                            Success.Of(x + y + z))));
+
+            Assert.Equal(Failure.Nok<string>(two), actual);
+        }
+
+        [Theory, Gen]
+        public void CanDealWithMixedTypes(
+            int one,
+            string two,
+            TestClass tclass)
+        {
+            var a = Success.Of(one);
+            var b = Success.Of(two);
+            var c = Success.Of(tclass);
+
+            var actual =
+                from aa in a
+                from bb in b
+                from cc in c
+                select new TestClass { Whatever = aa + bb };
+
+            actual.Traverse(
+                x => Assert.Equal(one + two, x.Whatever),
+                x => throw new Exception("should not get here"));
+        }
     }
 }

@@ -22,18 +22,17 @@ namespace LanguagePatternsAndExtensions
 
         public static Option<TResult> SelectMany<TSource, TIntermediate, TResult>(
             this Option<TSource> source,
-            Func<TSource, Option<TIntermediate>> intermediateProjection,
-            Func<TSource, TIntermediate, TResult> resultSelector)
+            Func<TSource, Option<TIntermediate>> intermediate,
+            Func<TSource, TIntermediate, TResult> selector)
         {
-
             return source.Match(
                 Option<TResult>.None(),
                 x =>
                 {
-                    var elem = intermediateProjection(x);
+                    var elem = intermediate(x);
                     return elem.Match(
                         Option<TResult>.None(),
-                        y => resultSelector(x, y).ToOption());
+                        y => selector(x, y).ToOption());
                 });
         }
     }

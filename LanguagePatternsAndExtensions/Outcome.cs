@@ -77,7 +77,7 @@ namespace LanguagePatternsAndExtensions
         }
 
         private readonly TValue Value;
-        private readonly string ErrorMessage;
+        public string ErrorMessage { get; }
         public bool Succeeded { get; }
     }
 }

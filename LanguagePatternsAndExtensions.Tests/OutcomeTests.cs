@@ -37,6 +37,7 @@ namespace LanguagePatternsAndExtensions.Tests
         {
             var sut = Success.Of("anything");
             Assert.True(sut.Succeeded);
+            Assert.Empty(sut.ErrorMessage);
         }
 
         [Theory, Gen]

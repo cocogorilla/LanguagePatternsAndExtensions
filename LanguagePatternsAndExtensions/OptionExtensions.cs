@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace LanguagePatternsAndExtensions
 {
@@ -34,6 +35,11 @@ namespace LanguagePatternsAndExtensions
                         Option<TResult>.None(),
                         y => selector(x, y).ToOption());
                 });
+        }
+
+        public static Option<T> ToOption<T>(this T? item) where T : struct
+        {
+            return item?.ToOption() ?? Option<T>.None();
         }
     }
 }

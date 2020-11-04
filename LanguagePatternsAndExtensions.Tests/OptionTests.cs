@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using AutoFixture;
 using Xunit;
+using Xunit.Sdk;
 using static LanguagePatternsAndExtensions.Option<string>;
 
 namespace LanguagePatternsAndExtensions.Tests
@@ -205,6 +206,18 @@ namespace LanguagePatternsAndExtensions.Tests
                 select new TestClass { Whatever = aa + bb };
 
             Assert.Equal(one + two, actual.GetValue(x => x).Whatever);
+        }
+
+        [Fact]
+        public void NullableTypesPerformCorrectly()
+        {
+            Nullable<int> nullint = null;
+            Nullable<int> nonnullint = 42;
+            Nullable<int> zeroint = 0;
+
+            Assert.Equal(Option<int>.None(), nullint.ToOption());
+            Assert.Equal(nonnullint, nonnullint.Value.ToOption().GetValue(x => x));
+            Assert.Equal(zeroint, zeroint.Value.ToOption().GetValue(x => x));
         }
     }
 }

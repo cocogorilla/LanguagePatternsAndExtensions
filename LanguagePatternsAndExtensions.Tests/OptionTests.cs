@@ -50,6 +50,36 @@ namespace LanguagePatternsAndExtensions.Tests
         }
 
         [Theory, Gen]
+        public void CanExitEarlyForSuccess(
+            string fail,
+            TestClass expected)
+        {
+            var sut = expected.ToOption();
+
+            TestClass actual;
+
+            if (sut.IsSome)
+                actual = sut.GetValue(x => x);
+            else
+                actual = null;
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void GetValueIsUnsafeAndCanCatastrophicallyFail()
+        {
+            var a = ((string)null).ToOption();
+
+            var actual = Record.Exception(() =>
+            {
+                var fail = a.GetValue(x => x.ToUpper());
+            });
+
+            Assert.IsType<NullReferenceException>(actual);
+        }
+
+        [Theory, Gen]
         public void TwoSomeOptionsSameValueAreEqual(
             string foo)
         {

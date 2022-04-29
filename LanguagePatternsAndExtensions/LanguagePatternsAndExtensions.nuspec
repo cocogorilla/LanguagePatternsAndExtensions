@@ -5,10 +5,13 @@
         <version>$version$</version>
         <title>$title$</title>
         <authors>Ethan Nelson</authors>
-        <licenseUrl>https://opensource.org/licenses/MIT</licenseUrl>
+        <license type="expression">MIT</license>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>Simple repetitivley used LINQ extensions</description>
+        <description>Simple repetitively used LINQ extensions and some functional stuff</description>
         <copyright>Copyright 2016</copyright>
         <tags>LINQ extensions</tags>
+	    <dependencies>
+			<group targetFramework=".NETFramework4.8"></group>
+	    </dependencies>
     </metadata>
 </package>

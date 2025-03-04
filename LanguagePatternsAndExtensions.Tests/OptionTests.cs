@@ -24,6 +24,10 @@ namespace LanguagePatternsAndExtensions.Tests
             var sut = nonnullstring.ToOption();
             var outcome = sut.Match(
                 "", x => x);
+            var outcomeNoneOverload = nullstring.ToOption().Match(
+                () => "overloadednone", x => x);
+            var outcomeSomeOverload = sut.Match(
+                () => throw new Exception("should not arrive"), x => x);
             var apples = "apples".ToOption();
             Assert.Equal("apples", apples.GetValue(x => x));
             Assert.Throws<NullReferenceException>(() =>
@@ -44,6 +48,8 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.NotEqual("test".ToOption(), string.Empty.ToOption());
             Assert.Equal("test".ToOption(), "test".ToOption());
             Assert.Equal("test".ToOption(), Some("test"));
+            Assert.Equal("overloadednone", outcomeNoneOverload);
+            Assert.Equal(nonnullstring, outcomeSomeOverload);
         }
 
         [Theory, Gen]

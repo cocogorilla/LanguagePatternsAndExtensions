@@ -116,7 +116,7 @@ namespace LanguagePatternsAndExtensions.Tests
             Assert.NotEqual(testone, testtwo);
         }
 
-        [Theory, Gen]
+        [Fact]
         public void NoneIsNoneSetCorrectly()
         {
             var foo = Option<int>.None();
